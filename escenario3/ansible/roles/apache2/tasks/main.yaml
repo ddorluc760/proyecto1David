@@ -7,6 +7,7 @@
       - php-mysql
       - php-mbstring
       - git
+      - mariadb-client
     state: present
     update_cache: yes
 
@@ -47,20 +48,38 @@
     - "{{virtualhosts}}"
   notify: restart apache2
 
+- name: Asegurar que DocumentRoot esté limpio
+  ansible.builtin.file:
+    path: "/{{ base_web_path }}/"
+    state: absent
+  become: yes
 
-- name: Copiar aplicación Guestbook
-  ansible.builtin.copy:
-    src: app/
+- name: Copiar aplicación Biblioteca
+  ansible.builtin.git:
+    repo: "{{ biblioteca_repo_url }}"
     dest: "/{{ base_web_path }}/"
+    version: master
+    update: yes
+  become: yes
+
+- name: Ajustar permisos del DocumentRoot
+  ansible.builtin.file:
+    path: "/{{ base_web_path }}/"
+    state: directory
     owner: www-data
     group: www-data
-    mode: '0644'
-    directory_mode: '0755'
-  
+    recurse: yes
+
 - name: Crear fichero de configuración config.php dentro de la aplicación
   ansible.builtin.template:
     src: config.php.j2
-    dest: "/{{ base_web_path }}/config.php"
+    dest: "/{{ base_web_path }}/Config/Config.php"
     owner: www-data
     group: www-data
-    
+
+- name: Crear fichero de conexión Conexion.php dentro de la aplicación
+  ansible.builtin.template:
+    src: Conexion.php.j2
+    dest: "/{{ base_web_path }}/Config/App/Conexion.php"
+    owner: www-data
+    group: www-data

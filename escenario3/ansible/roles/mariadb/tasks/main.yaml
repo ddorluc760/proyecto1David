@@ -8,16 +8,16 @@
 
 - name: Crear base de datos
   community.mysql.mysql_db:
-    name: "{{ guestbook_db_name }}"
+    name: "{{ biblioteca_db_name }}"
     state: present
     login_unix_socket: /var/run/mysqld/mysqld.sock
 
 - name: Crear usuario y otorgar privilegios
   community.mysql.mysql_user:
-    name: "{{ guestbook_db_user }}"
-    password: "{{ guestbook_db_password }}"
+    name: "{{ biblioteca_db_user }}"
+    password: "{{ biblioteca_db_password }}"
     host: "%"
-    priv: "{{ guestbook_db_name }}.*:ALL"
+    priv: "{{ biblioteca_db_name }}.*:ALL"
     state: present
     login_unix_socket: /var/run/mysqld/mysqld.sock
 
@@ -29,12 +29,12 @@
 - name: Comprobar si la tabla 'messages' existe
   community.mysql.mysql_query:
     login_unix_socket: /var/run/mysqld/mysqld.sock
-    query: "SHOW TABLES FROM {{ guestbook_db_name }} LIKE 'messages';"
+    query: "SHOW TABLES FROM {{ biblioteca_db_name }} LIKE 'messages';"
   register: table_check
 
 - name: Importar esquema SQL (solo si la tabla no existe)
   community.mysql.mysql_db:
-    name: "{{ guestbook_db_name }}"
+    name: "{{ biblioteca_db_name }}"
     state: import
     target: /tmp/schema.sql
     login_unix_socket: /var/run/mysqld/mysqld.sock
@@ -49,3 +49,19 @@
     line: 'bind-address = 0.0.0.0'
     state: present
   notify: restart mariadb
+
+- name: Descargar esquema SQL directamente desde GitHub en MariaDB
+  get_url:
+    url: "https://raw.githubusercontent.com/VidaInformatico/Sistema-de-biblioteca-basico-php-8-y-mysql/master/biblioteca.sql"
+    dest: /tmp/biblioteca.sql
+
+- name: Importar esquema SQL en MariaDB
+  community.mysql.mysql_db:
+    name: "{{ biblioteca_db_name }}"
+    state: import
+    target: "/tmp/biblioteca.sql"
+    login_user: "root"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  become: yes
+    #login_password: ""
+    #login_host: "localhost"

@@ -1,0 +1,17 @@
+- name: Establecer el servidor web como puerta de enlace
+  copy:
+    dest: /etc/netplan/01-network.yaml
+    content: |
+      network:
+        version: 2
+        ethernets:
+          ens5:
+            dhcp4: false
+            addresses: ["10.0.0.2/24"]
+            gateway4: 10.0.0.1
+            nameservers:
+              addresses: [1.1.1.1,8.8.8.8]
+  notify: Apply netplan
+
+- name: Apply netplan
+  command: netplan apply

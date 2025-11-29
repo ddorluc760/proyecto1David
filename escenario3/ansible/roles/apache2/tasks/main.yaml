@@ -83,3 +83,8 @@
     dest: "/{{ base_web_path }}/Config/App/Conexion.php"
     owner: www-data
     group: www-data
+
+#- name: Reiniciar servicio de Apache
+#  ansible.builtin.systemd:
+#    name: apache2
+#    state: restarted

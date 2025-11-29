@@ -55,7 +55,6 @@ locals {
       base_image = "ubuntu2404-base.qcow2"
 
       networks = [
-        { network_name = "red-externa", wait_for_lease = false },
         { network_name = "red-datos" }
       ]
 

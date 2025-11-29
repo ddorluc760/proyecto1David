@@ -1,0 +1,30 @@
+- name: Actualizar paquetes router_nat
+  apt:
+    update_cache: yes
+    upgrade: yes
+    cache_valid_time: 3600
+  when: inventory_hostname == "apache2"
+
+- name: Habilitar IP Forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    state: present
+    reload: yes
+
+- name: Instalar iptables-persistent
+  apt:
+    name: iptables-persistent
+    state: present
+
+- name: Aplicar Reglas SNAT para salida a Internet de la red red-datos
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: 10.0.0.0/24
+    jump: MASQUERADE
+
+- name: Aceptar forwarding
+  iptables:
+    chain: FORWARD
+    policy: ACCEPT
